@@ -7,6 +7,11 @@ import compose = require('koa-compose');
 import convert = require('koa-convert');
 import cors = require('@koa/cors');
 
+import passport = require('koa-passport');
+import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
+
+import { JwtSecret } from '../config';
+
 export default () => compose([
     error,
     cors(),
@@ -14,6 +19,7 @@ export default () => compose([
         fields: 'body',
         textLimit: '300kb'
     })),
+    passport.initialize()
 ])
 
 async function error(ctx, next) {
@@ -31,3 +37,22 @@ async function error(ctx, next) {
         }
     }
 }
+
+passport.use(
+    new JwtStrategy(
+        {
+            secretOrKey: JwtSecret,
+            //jwtFromRequest: ExtractJwt.fromUrlQueryParameter('token')
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()
+        },
+        async (payload, done) => {
+            // deserialize jwt payload
+            const user = null //await db.User.findOne({ where: { username: payload.user }})
+
+            if (user)
+                done(null, Object.assign({ isToken: !!payload.hb }, user))
+            else
+                done(null, false)
+        }
+    )
+)

@@ -7,6 +7,7 @@ const apollo_server_koa_1 = require("apollo-server-koa");
 const apollo_upload_server_1 = require("apollo-upload-server");
 const graphql_1 = require("./graphql");
 const router = new Router();
+const ENV = (process.env.NODE_ENV !== 'production');
 /**
  * A custom middleware to generate user profile without throwing errors,
  * in this case, we insert dummy data here because graphiql cannot pass the Authorization headers.
@@ -29,8 +30,10 @@ router.post('/g', graphAuth(), apollo_upload_server_1.apolloUploadKoa({ uploadDi
         context: {
             curr_user,
         },
-        debug: (process.env.NODE_ENV !== 'production')
+        debug: ENV
     };
 }));
+if (ENV)
+    router.get('/giql', apollo_server_koa_1.graphiqlKoa({ endpointURL: '/g' }));
 exports.default = () => compose([router.routes(), router.allowedMethods()]);
 //# sourceMappingURL=index.js.map

@@ -7,6 +7,9 @@ const body = require("koa-better-body");
 const compose = require("koa-compose");
 const convert = require("koa-convert");
 const cors = require("@koa/cors");
+const passport = require("koa-passport");
+const passport_jwt_1 = require("passport-jwt");
+const config_1 = require("../config");
 exports.default = () => compose([
     error,
     cors(),
@@ -14,6 +17,7 @@ exports.default = () => compose([
         fields: 'body',
         textLimit: '300kb'
     })),
+    passport.initialize()
 ]);
 async function error(ctx, next) {
     try {
@@ -30,4 +34,16 @@ async function error(ctx, next) {
         }
     }
 }
+passport.use(new passport_jwt_1.Strategy({
+    secretOrKey: config_1.JwtSecret,
+    //jwtFromRequest: ExtractJwt.fromUrlQueryParameter('token')
+    jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken()
+}, async (payload, done) => {
+    // deserialize jwt payload
+    const user = null; //await db.User.findOne({ where: { username: payload.user }})
+    if (user)
+        done(null, Object.assign({ isToken: !!payload.hb }, user));
+    else
+        done(null, false);
+}));
 //# sourceMappingURL=index.js.map

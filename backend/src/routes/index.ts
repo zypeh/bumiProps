@@ -9,6 +9,8 @@ import { schema } from './graphql';
 
 const router = new Router();
 
+const ENV: boolean = (process.env.NODE_ENV !== 'production');
+
 /**
  * A custom middleware to generate user profile without throwing errors,
  * in this case, we insert dummy data here because graphiql cannot pass the Authorization headers.
@@ -41,9 +43,12 @@ router.post('/g',
                 curr_user,
                 // api,
             },
-            debug: (process.env.NODE_ENV !== 'production')
+            debug: ENV
         }
     })
 )
+
+if (ENV) // Only enable this route when it's development environment
+    router.get('/giql', graphiqlKoa({ endpointURL: '/g' }))
 
 export default () => compose([ router.routes(), router.allowedMethods() ]);
